@@ -1,4 +1,25 @@
-class Sensor {}
+class Sensor {
+    constructor(id, name, type, value, unit, updated_at) {
+        this.id = id;
+        this.name = name;
+        this.type = type;
+        this.value = value;
+        this.unit = unit;
+        this.updated_at = updated_at;
+
+        const allowedTypes = ['temperature', 'humidity', 'pressure'];
+        if (!allowedTypes.includes(type)) {
+            throw new Error(`Type ${type} is not allowed. Allowed types are: ${allowedTypes.join(', ')}`);
+        }
+    }
+
+    set updateValue(newValue) {
+        this.value = newValue;
+        this.updated_at = new Date().toISOString();
+    }
+}
+
+
 
 class SensorManager {
     constructor() {

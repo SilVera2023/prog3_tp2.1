@@ -9,6 +9,22 @@ class Card {
     #createCardElement() {
         const cardElement = document.createElement("div");
         cardElement.classList.add("cell");
+        cardElement.addEventListener('click', () => {
+            if (!this.isFlipped) {
+                this.flip();
+                this.onClick(this);
+            }
+        });
+
+        const frontFace = document.createElement('div');
+        frontFace.classList.add('front');
+        const backFace = document.createElement('img');
+        backFace.src = this.img;
+        cardElement.append(frontFace, backFace);
+
+        
+
+
         cardElement.innerHTML = `
           <div class="card" data-name="${this.name}">
               <div class="card-inner">

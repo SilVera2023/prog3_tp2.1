@@ -6,14 +6,84 @@ class Currency {
 }
 
 class CurrencyConverter {
-    constructor() {}
+    constructor(apiUrl) {
+        this.apiUrl = apiUrl;
+        this.currencies = [];
+    }
 
-    getCurrencies(apiUrl) {}
+    async getCurrencies(apiUrl) {
+        try {
+            const response = await
+            fetch(`${this.apiUrl}/currencies`);
+            const data = await response.json();
+            this.currencies = Object.entries(data).map(([code, name]) => new Currency(code, name));
+        } catch (error) {
+            console.error('Error fetching currencies:', error);
+        }
+    }
 
-    convertCurrency(amount, fromCurrency, toCurrency) {}
+        
+    
+
+    async convertCurrency(amount, fromCurrency, toCurrency) {
+        if (fromCurrency.code === toCurrency.code) {
+            return amount;
+        }
+        try {
+            const response = await fetch(`${this.apiUrl}/latest?amount=${amount}&from=${fromCurrency.code}&to=${toCurrency.code}`);
+            const data = await response.json();
+            return data.rates[toCurrency.code];
+        } catch (error) {
+            console.error('Error converting currency:', error);
+            return null;
+        }
+    }
+    async getRateDifference(fromCurrency, toCurrency) {
+        const today = new Date().toISOString().split('T')[0];
+        const yesterday = new Date(Date.now() - 864e5).toISOString().split('T')[0];
+
+        try {
+            const responseToday = await fetch(`${this.apiUrl}/${today}?from=${fromCurrency.code}&to=${toCurrency.code}`);
+            const responseYesterday = await fetch(`${this.apiUrl}/${yesterday}?from=${fromCurrency.code}&to=${toCurrency.code}`);
+
+            const dataToday = await responseToday.json();
+            const dataYesterday = await responseYesterday.json();
+
+            const rateToday = dataToday.rates[toCurrency.code];
+            const rateYesterday = dataYesterday.rates[toCurrency.code];
+
+            return rateToday - rateYesterday;
+        } catch (error) {
+            console.error('Error fetching rate difference:', error);
+            return null;
+        }
+    }
 }
 
-document.addEventListener("DOMContentLoaded", async () => {
+document.addEventListener('DOMContentLoaded', async () => { 
+    const converter = new CurrencyConverter('https://api.frankfurter.app');
+    await converter.getCurrencies();
+
+    const fromCurrencySelect = document.getElementById('from-currency');
+    const toCurrencySelect = document.getElementById('to-currency');
+
+    converter.currencies.forEach(currency => {
+        const option1 = document.createElement('option');
+        option1.value = currency.code;
+        option1.text = `${currency.name} (${currency.code})`;
+        fromCurrencySelect.add(option1);
+
+        const option2 = document.createElement('option');
+        option2.value = currency.code;
+        option2.text = `${currency.name} (${currency.code})`;
+        toCurrencySelect.add(option2);
+    });
+
+
+
+
+
+document.addEventListener("DOMContentLoaded"), async () => {
     const form = document.getElementById("conversion-form");
     const resultDiv = document.getElementById("result");
     const fromCurrencySelect = document.getElementById("from-currency");
@@ -61,4 +131,4 @@ document.addEventListener("DOMContentLoaded", async () => {
             });
         }
     }
-});
+} 
